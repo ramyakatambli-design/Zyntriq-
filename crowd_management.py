@@ -36,10 +36,13 @@ def main():
     print(f"Starting crowd management on {source} with threshold {args.threshold}...")
 
     try:
+        frame_idx = 0
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
+
+            frame_idx += 1
 
             # Run YOLOv8 inference
             results = model(frame, verbose=False)
@@ -52,6 +55,10 @@ def main():
                     cls = int(box.cls[0])
                     if cls == 0:  # 'person' class
                         person_count += 1
+
+            # Print feedback to console every 30 frames or if threshold exceeded
+            if frame_idx % 30 == 0 or person_count > args.threshold:
+                print(f"Frame: {frame_idx} | Current Person Count: {person_count}")
 
             # Visualize detections
             annotated_frame = results[0].plot()
